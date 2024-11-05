@@ -1,60 +1,40 @@
+const LoginPage = require('../pom/pages/login.page');
+const ERROR_MESSAGES = require('../pom/fixtures/errorMessages');
+const ErrorComponent = require('../pom/components/common/error.component');
+const Headers = require('../pom/components/common/headers.component');
+const USER_DATA = require('../pom/fixtures/userData');
 
-//**
- * 
- * @param {'string'} username 
- * @param {'string'} password 
- * @param {'boolean'} deleteUsername 
- * @param {'boolean'} deletePassword 
- */
-async function fillCredentials(
-  username,
-  password,
-  deleteUsername,
-  deletePassword
-) {
-  const loginBtn = await $('[data-test="login-button"]');
-  const usernameInputField = await $('[data-test="username"]');
-  const passwordInputField = await $('[data-test="password"]');
-
-  await usernameInputField.setValue(username);
-  await passwordInputField.setValue(password);
-  if (deleteUsername) {
-    await usernameInputField.clearValue();
-  } else if (deletePassword) {
-    await passwordInputField.clearValue();
-  }
-  await loginBtn.click();
-}
+const loginPage = new LoginPage();
+const errorComponent = new ErrorComponent();
+const headers = new Headers();
 
 describe('Testing Login functionality on swag labs', () => {
   beforeEach('Visit Swag Labs home page', async () => {
     //Visit page
-    await browser.url('/');
+    await loginPage.open();
     //Check correct page is loaded
-    await expect(browser).toHaveTitle('Swag Labs');
+    await expect(browser).toHaveTitle(headers['title']);
   });
 
   it('Should get correct error with empty credentials', async () => {
-    const error = await $('[data-test="error"]');
-    const errorMessage = 'Epic sadface: Username is required';
+    await loginPage.fillCredentials(USER_DATA['EMPTY_CREDENTIALS']);
 
-    await fillCredentials('test123', 'test', true, true);
-
-    await expect(error).toHaveText(errorMessage);
+    await expect(errorComponent['errorContainer']).toHaveText(
+      ERROR_MESSAGES['MISSING_USERNAME']
+    );
   });
 
   it('Should get correct error message with empty password field', async () => {
-    const error = await $('[data-test="error"]');
-    const errorMessage = 'Epic sadface: Password is required';
-    await fillCredentials('test123', 'test', false, true);
+    await loginPage.fillCredentials(USER_DATA['MISSING_PASSWORD']);
 
-    await expect(error).toHaveText(errorMessage);
+    await expect(errorComponent['errorContainer']).toHaveText(
+      ERROR_MESSAGES['MISSING_PASSWORD']
+    );
   });
 
   it('Should be successfully logged in', async () => {
-    const swagLabsLogo = await $('.app_logo');
-    await fillCredentials('standard_user', 'secret_sauce', false, false);
+    await loginPage.fillCredentials(USER_DATA['VALID_USER']);
 
-    expect(swagLabsLogo).toHaveValue('Swag Labs');
+    expect(headers['homeLogo']).toHaveValue(headers['title']);
   });
 });

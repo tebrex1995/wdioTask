@@ -1,4 +1,4 @@
-const LoginComponent = require('../components/login.component');
+const { LoginComponent } = require('../components');
 
 class LoginPage extends LoginComponent {
   constructor() {
@@ -9,6 +9,10 @@ class LoginPage extends LoginComponent {
     await browser.url('/');
   }
 
+  /**
+   *
+   * @param {object} param
+   */
   async fillCredentials({
     username,
     password,
